@@ -70,7 +70,7 @@ def main():
             print(f"-> {result_dict}")
 
 
-    print(response.text)
+        print(f"Function returned:\n{result_dict.get('result') or result_dict.get('error')}")
 
 if __name__ == "__main__":
     main()
