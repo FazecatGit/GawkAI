@@ -5,6 +5,12 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
+from functions.functiondeclaration import available_functions
+from functions.get_files_info import *
+from system_prompt import system_prompt
+from functions.dispatcher import call_function, WORKING_DIRECTORY
+from functions.run_python import run_python_file
+
 def main():
     load_dotenv()
     
@@ -29,13 +35,14 @@ def main():
     messages1 = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
-
     
     # calling the model
     def generate_content(client, messages):
         return client.models.generate_content(
             model="gemini-2.0-flash-001",
             contents=messages,
+            config=types.GenerateContentConfig(
+            tools=[available_functions], system_instruction=system_prompt)
         )
     # Call the model
     response = generate_content(client1, messages1)
@@ -45,8 +52,25 @@ def main():
         print(f'User prompt: {user_prompt}')
         print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}')
         print(f'Response tokens: {response.usage_metadata.candidates_token_count}')
-        print(response.text)
 
+
+    if not response.function_calls:
+        print(response.text)
+        return
+
+    for call in response.function_calls:
+        function_call_result = call_function(call, verbose)
+
+        if not function_call_result.parts or not function_call_result.parts[0].function_response.response:
+            raise Exception("Function call did not return proper response")
+
+        result_dict = function_call_result.parts[0].function_response.response
+
+        if verbose:
+            print(f"-> {result_dict}")
+
+
+    print(response.text)
 
 if __name__ == "__main__":
     main()

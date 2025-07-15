@@ -1,6 +1,7 @@
 import os
 from functions.config import*
 
+
 def get_files_info(working_directory, directory=None):
     try:
          
