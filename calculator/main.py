@@ -11,10 +11,14 @@ def main():
         print("Calculator App")
         print('Usage: python main.py "<expression>"')
         print('Example: python main.py "3 + 5"')
-        return
+        
 
     expression = " ".join(sys.argv[1:])
     try:
+        if len(sys.argv) <=1:
+            result = calculator.evaluate("3 + 7 * 2")
+            print(result)
+            return
         result = calculator.evaluate(expression)
         to_print = render(expression, result)
         print(to_print)
